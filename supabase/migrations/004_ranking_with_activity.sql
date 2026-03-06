@@ -1,9 +1,11 @@
 -- ============================================================
--- Ranking Function (DEPRECATED - superseded by 004_ranking_with_activity.sql)
--- This version used only the registrations table.
--- The current version uses the activity table for financial data.
+-- Updated Ranking Function - uses activity table for deposits
+-- Joins activity (financial) with registrations (metadata)
+-- Only includes players with deposits > 0 AND wagering > 0
+-- Run this in the Supabase SQL Editor
 -- ============================================================
--- See 004_ranking_with_activity.sql for the active version.
+
+drop function if exists get_player_ranking;
 
 create or replace function get_player_ranking(
   p_limit int default 50,
@@ -63,7 +65,9 @@ begin
 end;
 $$;
 
--- Count function for total/pagination
+-- Updated count function
+drop function if exists get_player_ranking_count;
+
 create or replace function get_player_ranking_count(
   p_affiliate_id uuid default null
 )

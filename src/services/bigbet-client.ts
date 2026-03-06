@@ -23,6 +23,23 @@ export interface RegistrationRecord {
   wagering: number | null;
 }
 
+export interface ActivityRecord {
+  playerId: string;
+  day: number;
+  month: number;
+  year: number;
+  deposits: number | null;
+  depositCount: number;
+  withdrawals: number | null;
+  netDeposits: number | null;
+  commissions: number | null;
+  commissionCount: number;
+  ngr: number | null;
+  ggr: number | null;
+  positionCount: number;
+  wagering: number | null;
+}
+
 export class BigBetClient {
   private client: AxiosInstance;
   private baseUrl: string;
@@ -91,5 +108,17 @@ export class BigBetClient {
     }
 
     return res.data as RegistrationRecord[];
+  }
+
+  async fetchActivity(from: string, to: string): Promise<ActivityRecord[]> {
+    const res = await this.client.get('/api/reports/activity', {
+      params: { from, to },
+    });
+
+    if (!Array.isArray(res.data)) {
+      throw new Error(`Unexpected activity response: ${JSON.stringify(res.data).slice(0, 200)}`);
+    }
+
+    return res.data as ActivityRecord[];
   }
 }

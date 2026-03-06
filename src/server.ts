@@ -6,7 +6,7 @@ const supabase = createClient(config.supabaseUrl, config.supabaseServiceRoleKey)
 
 const app = express();
 
-const VALID_ORDER_FIELDS = ['first_deposit', 'net_deposits', 'wagering'] as const;
+const VALID_ORDER_FIELDS = ['total_deposits', 'wagering'] as const;
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -20,7 +20,7 @@ app.get('/api/ranking', async (req, res) => {
     const affiliateId = (req.query.affiliate_id as string) || null;
     const orderBy = VALID_ORDER_FIELDS.includes(req.query.order_by as any)
       ? (req.query.order_by as string)
-      : 'first_deposit';
+      : 'total_deposits';
 
     const [rankingResult, countResult] = await Promise.all([
       supabase.rpc('get_player_ranking', {

@@ -1,9 +1,11 @@
-import { BigBetClient, RegistrationRecord } from '../services/bigbet-client';
+import { BigBetClient, RegistrationRecord, ActivityRecord } from '../services/bigbet-client';
 import {
   Affiliate,
   RegistrationRow,
+  ActivityRow,
   getActiveAffiliates,
   upsertRegistrations,
+  upsertActivity,
   createSyncLog,
 } from '../services/supabase';
 
@@ -14,6 +16,24 @@ function formatDate(d: Date): string {
 function todayFormatted(): string {
   const now = new Date();
   return `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
+}
+
+function mapToActivityRow(affiliateId: string, rec: ActivityRecord): ActivityRow {
+  return {
+    affiliate_id: affiliateId,
+    player_id: rec.playerId,
+    deposits: rec.deposits,
+    deposit_count: rec.depositCount ?? 0,
+    withdrawals: rec.withdrawals,
+    net_deposits: rec.netDeposits,
+    commissions: rec.commissions,
+    commission_count: rec.commissionCount ?? 0,
+    ngr: rec.ngr,
+    ggr: rec.ggr,
+    position_count: rec.positionCount ?? 0,
+    wagering: rec.wagering,
+    synced_at: new Date().toISOString(),
+  };
 }
 
 function mapToRow(affiliateId: string, rec: RegistrationRecord): RegistrationRow {
@@ -61,7 +81,17 @@ async function syncAffiliate(affiliate: Affiliate): Promise<void> {
     if (records.length > 0) {
       const rows = records.map((r) => mapToRow(affiliate.id, r));
       await upsertRegistrations(rows);
-      console.log(`  Upserted ${rows.length} rows into Supabase`);
+      console.log(`  Upserted ${rows.length} registration rows into Supabase`);
+    }
+
+    console.log(`  Fetching activity from ${from} to ${to}...`);
+    const activityRecords = await client.fetchActivity(from, to);
+    console.log(`  Received ${activityRecords.length} activity records`);
+
+    if (activityRecords.length > 0) {
+      const activityRows = activityRecords.map((r) => mapToActivityRow(affiliate.id, r));
+      await upsertActivity(activityRows);
+      console.log(`  Upserted ${activityRows.length} activity rows into Supabase`);
     }
 
     await createSyncLog({

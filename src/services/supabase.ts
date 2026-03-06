@@ -34,6 +34,22 @@ export interface RegistrationRow {
   synced_at: string;
 }
 
+export interface ActivityRow {
+  affiliate_id: string;
+  player_id: string;
+  deposits: number | null;
+  deposit_count: number;
+  withdrawals: number | null;
+  net_deposits: number | null;
+  commissions: number | null;
+  commission_count: number;
+  ngr: number | null;
+  ggr: number | null;
+  position_count: number;
+  wagering: number | null;
+  synced_at: string;
+}
+
 export interface SyncLog {
   affiliate_id: string;
   status: 'success' | 'error';
@@ -69,6 +85,19 @@ export async function upsertRegistrations(rows: RegistrationRow[]): Promise<void
 
     if (error) {
       throw new Error(`Failed to upsert registrations (batch ${i}): ${error.message}`);
+    }
+  }
+}
+
+export async function upsertActivity(rows: ActivityRow[]): Promise<void> {
+  for (let i = 0; i < rows.length; i += UPSERT_BATCH_SIZE) {
+    const batch = rows.slice(i, i + UPSERT_BATCH_SIZE);
+    const { error } = await supabase
+      .from('activity')
+      .upsert(batch, { onConflict: 'affiliate_id,player_id' });
+
+    if (error) {
+      throw new Error(`Failed to upsert activity (batch ${i}): ${error.message}`);
     }
   }
 }
