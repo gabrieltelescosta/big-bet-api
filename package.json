@@ -7,7 +7,12 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
-    "sync": "tsx src/index.ts --run-now"
+    "sync": "tsx src/index.ts --run-now",
+    "backfill": "tsx src/index.ts --backfill",
+    "pm2:start": "npm run build && pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop bigbet-api",
+    "pm2:restart": "npm run build && pm2 restart bigbet-api",
+    "pm2:logs": "pm2 logs bigbet-api"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2",

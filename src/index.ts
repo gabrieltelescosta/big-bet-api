@@ -1,11 +1,33 @@
 import cron from 'node-cron';
 import { config } from './config';
-import { runSync } from './jobs/sync-registrations';
+import { runSync, runBackfill } from './jobs/sync-activity';
 import { startServer } from './server';
 
-const runNow = process.argv.includes('--run-now');
+const args = process.argv.slice(2);
+const runNow = args.includes('--run-now');
+const backfill = args.includes('--backfill');
+
+function getArg(name: string): string | undefined {
+  const idx = args.indexOf(name);
+  if (idx === -1 || idx + 1 >= args.length) return undefined;
+  return args[idx + 1];
+}
 
 async function main() {
+  if (backfill) {
+    const from = getArg('--from');
+    const to = getArg('--to');
+
+    if ((from && !to) || (!from && to)) {
+      console.error('Both --from and --to are required when specifying a date range.');
+      process.exit(1);
+    }
+
+    console.log('Running backfill...\n');
+    await runBackfill(from, to);
+    process.exit(0);
+  }
+
   if (runNow) {
     console.log('Running sync immediately (--run-now)\n');
     await runSync();
