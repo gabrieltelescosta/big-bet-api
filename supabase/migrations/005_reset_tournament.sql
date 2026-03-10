@@ -277,4 +277,4 @@ values ('OWSANTOS', 'wellintonjs@gmail.com', 'Senha.123@')
 on conflict (email) do nothing;
 
 insert into tournaments (name, start_date, end_date, active)
-values ('Torneio de Depositos', '2026-03-10', '2026-05-10', true);
+values ('Torneio de Depositos', '2026-03-01', '2026-05-10', true);
